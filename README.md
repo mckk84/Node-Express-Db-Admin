@@ -3,15 +3,15 @@ Node-Express-Db-Admin
 
 Node - Express Js - Simple Database Administrator
 
-#Install
+## Install
 
 npm install
 
-#Run
+## Run
 
 npm start
 
-#Usage
+## Usage
 
 1. Select Database at the top menu
 2. Add connection parameters according to database
@@ -21,4 +21,4 @@ npm start
 6. Click on table to view the contents
 7. Query ( mongodb ) with Find/Project/Sort
 
-#More to come
+## More to come
