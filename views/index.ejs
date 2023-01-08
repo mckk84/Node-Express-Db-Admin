@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UV-Compatible" content="IE-edge">
+        <title>Node MongoDb Admin</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+        <style type="text/css">
+            *{
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+            /* Hide scrollbar for Chrome, Safari and Opera */
+            body::-webkit-scrollbar {
+              display: none;
+              scrollbar-width: 0;
+            }
+            ::-webkit-scrollbar {
+                width: 0;  /* Remove scrollbar space */
+                background: transparent;  /* Optional: just make scrollbar invisible */
+            }
+            /* Optional: show position indicator in red */
+            ::-webkit-scrollbar-thumb {
+                background: #FF0000;
+            }
+            /* Hide scrollbar for IE, Edge and Firefox */
+            body {
+              -ms-overflow-style: none;  /* IE and Edge */
+              scrollbar-width: none;  /* Firefox */
+            }
+            body{
+                font-family: Verdana;
+                font-size: 1.1rem;
+            }
+            .gap-10{
+                gap:10px;
+            }
+            td {
+              position: relative;
+              padding: 5px !important;  
+              border-bottom: 1px solid #343a40 !important;
+            }
+            pre.expanded{
+              white-space: pre !important; 
+            }
+            pre{
+              margin-bottom: 0;
+              white-space:initial;
+              word-wrap: break-word;
+            }
+            table {
+              table-layout: fixed;
+            }
+            .loadmore{
+                border: 1px solid cadetblue;
+                display: block;
+                text-align: center;
+                padding: 2px;
+                width: 120px;
+                margin: 0 auto;
+                border-radius: 35px;
+                background-color: cadetblue !important;
+                color: white !important;
+                font-size: 14px;
+                cursor: pointer;
+            }
+            .loadmore:hover{
+                font-weight:bold;
+            }
+        </style>
+    </head>
+    <body class="container-fluid">
+        <header class="row">
+            <nav class="col-12 navbar navbar-expand-lg navbar-light bg-light border-bottom justify-content-between">
+                <a class="navbar-brand" href="/">Node MongoDb Admin</a>
+                <% if( typeof databases != 'undefined' && databases.length ) { %>
+                  <div class="d-inline-block">
+                        <form action="/database" method="get">
+                            <div class="form-group d-flex align-items-center justify-content-between gap-10">
+                                <label class="d-inline-block" for="db"><b>Databases</b></label>
+                                <select name="db" onchange="this.form.submit();" class="form-select">
+                                    <option value="">--Select Database--</option>
+                                    <% databases.forEach(function(db, index) { %>
+                                    <option <%=( selectedDatabase && selectedDatabase == db.name) ? 'selected' : '' %> value="<%=db.name%>"><%=db.name%></option>
+                                    <% }); %>    
+                                </select>
+                            </div>
+                        </form>
+                  </div>
+                  <% } %>
+                  <ul class="navbar-nav">
+                      <% if( typeof URI != 'undefined' && URI != "" ) { %>
+                      <li class="nav-item text-center">
+                        <a title="<%=URI%>" class="nav-link text-danger" href="#"><i class="fa fa-database"></i></a>
+                      </li>
+                      <% } %>
+                      <li class="nav-item">
+                        <a class="nav-link text-dark" href="/">Home</a>
+                      </li>
+                      <% if( typeof URI != 'undefined' && URI != "" ) { %>
+                      <li class="nav-item">
+                        <a title="Close Db Connection" class="nav-link text-danger" href="/disconnect">Close</a>
+                      </li>
+                      <% } %>                
+                    </ul>
+              </nav>
+        </header>
+        <main class="row">
+            <% if( typeof msg != 'undefined' && msg != "" ) { %>
+            <span class="w-50 d-block mx-auto text-center p-2 text-info rounded-lg"><h4><%=msg%></h4></span>
+            <% } %>
+            <% if( databases === false ) { %>
+            <div class="container-fluid py-4" style="min-height: 731px;">
+                <div class="row d-flex align-items-center justify-content-center">
+                    <div class="col-6 py-4">
+                        <div class="border rounded-lg shadow-lg bg-light mx-auto p-4 py-5">
+                            <form method="post" action="/connect">
+                                <div class="form-group mb-2">
+                                    <label>Connection URL</label>
+                                    <input type="text" required name="connectionurl" maxlength="100" class="form-control"/>
+                                </div>
+                                <div class="form-group">
+                                    <button class="btn btn-primary" type="submit">Connect</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <% } else { %>
+            <div class="sidebar col-md-2 bg-light py-0 px-0" style="border-right: 1px solid #343a40;min-height: 730px;">
+                <nav class="navbar d-block w-100 p-0">
+                    <% if( typeof tables != 'undefined' && tables.length ) { %>
+                    <span class="d-block w-100 py-2 bg-dark px-2 text-light">Collections</span>
+                    <ul class="navbar-nav">
+                        <% tables.forEach(function(t, index) { %>
+                        <li class="nav-item border-bottom">
+                            <a class="tableDataLink nav-link text-break text-wrap p-2" href="/table?table=<%=t.name%>&db=<%=(selectedDatabase ? selectedDatabase:'')%>"><i class="fa fa-file-archive-o"></i>&nbsp;<%=t.name.toLowerCase()%></a>
+                        </li>
+                        <% }); %>
+                    <% } %>
+                </nav>
+            </div>
+            <div class="col-md-10 pt-2 px-2 mb-4">
+                <!-- <div id="queryblock" class="col-md-12 text-dark border p-2 m-2">
+                    <div class="form-group mb-2">
+                        <textarea name="query" class="form-control" rows="3" cols="50" placeholder="Query.."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-primary">Query</button>
+                    </div>
+                </div> -->
+                <div id="responseTable" data-skip="0" class="col-md-12 pt-2 px-2 mb-4 mx-auto">
+                    <span class="w-100 loading mt-2 p-2 text-center bg-dark text-light rounded-lg">Loading Documents...</span>
+                    <% if( typeof table !== "undefined" ) { %>
+                    <span class="d-block text-dark font-weight-bold p-2"><%=table%></span>
+                    <% } %>
+                    <% if( typeof tableData !== "undefined" && tableData.length ) { %>
+                        <div class="table-responsive-sm">
+                            <table border="1" class="table text-sm table-sm">
+                                    <% tableData.forEach(function(rowObj, index) { 
+                                        keys = Object.keys(rowObj);
+                                    if(index == 0) { %>
+                                    <thead class="bg-dark font-weight-normal text-light">
+                                        <tr>
+                                            <% Object.keys(rowObj).forEach(function(key, index){ %>
+                                            <th class="font-weight-normal"><%=key%></th>
+                                            <% }); %>
+                                        </tr>
+                                    </thead>
+                                    <% } %>
+                                    <tbody>
+                                    <tr>
+                                        <% Object.keys(rowObj).forEach(function(key, index){ %>
+
+                                        <td><%=typeof rowObj[key]%> : <%=rowObj[key]%></td>
+
+                                        <% }); %>
+                                    </tr>
+                                    <% }); %>
+                                </tbody>
+                            </table>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+            <% } %>
+        </main>
+        <footer class="row py-2 justify-content-center text-center bg-dark text-light">
+            <p class="mb-0">@2023 Copyright.</p>
+        </footer>
+        <script type="text/javascript">
+
+            function handleClick(e)
+            {
+                $(e).parent().find('pre').toggleClass('expanded');
+            }
+
+            function loadmore()
+            {
+                var skip = $("#responseTable").data("skip");
+                var request_url = $("#responseTable").data("req");
+                $(".loading").show();
+                request_url = request_url + "&skip="+skip;
+                skip = parseInt(skip) + 10;
+                $("#responseTable").data("skip", skip);
+
+                $.get(request_url, function(data)
+                {
+                    $(".loading").hide();
+                    console.log(data);
+                    if( data.hasOwnProperty('tableData') )
+                    {
+                        data.tableData.forEach(function(obj) {
+                            $("#responseTable table tbody").append('<tr><td><pre>'+JSON.stringify(obj, undefined, 2)+'</pre><span style="top:5px;right:5px;cursor:pointer;" onclick="handleClick(this)" class="rounded-lg position-absolute"><i class="fa fa-expand"></i></span></td></tr>');                                
+                        });
+                    }
+                });
+            }
+            
+            $(document).ready(function(){
+
+                $(".loading").hide();
+                //$("#queryblock").hide();
+
+                $(".tableDataLink").click(function(e)
+                {
+                    e.preventDefault();
+                    $("#responseTable").html("").data("skip", 10);
+                    var url_params = window.location.href.split('/');
+                    url_params.pop();
+                    var base_url = url_params.join('/');
+                    console.log(base_url);
+                    console.log($(this).attr("href"));
+                    var request_url = base_url + $(this).attr("href") + "&ajax=1";
+                    $("#responseTable").data("req", request_url);
+                    $(".loading").html('Loading Documents..');
+                    $("#queryblock").show();
+
+                    $.get(request_url, function(data){
+                        $(".loading").hide();
+                        console.log(data);
+                        if( data.hasOwnProperty('table') )
+                        {
+                            $("#responseTable").html('<span class="d-block border-bottom bg-info text-light font-weight-bold p-2">'+data.table+'</span>');
+                        }
+                        if( data.hasOwnProperty('tableData') )
+                        {
+                            $("#responseTable").append('<div class="table-responsive w-100"><table border="1" class="w-100 table table-bordered"><tbody></tbody></table><span onclick="loadmore()" class="loadmore">Load More</span></div>');
+                            data.tableData.forEach(function(obj) {
+                                $("#responseTable table tbody").append('<tr><td><pre>'+JSON.stringify(obj, undefined, 2)+'</pre><span style="top:5px;right:5px;cursor:pointer;" onclick="handleClick(this)" class="rounded-lg position-absolute"><i class="fa fa-expand"></i></span></td></tr>');                                
+                            });
+                        }
+                    });
+                    return false;
+                });
+
+            });
+
+        </script>
+    </body>
+</html>

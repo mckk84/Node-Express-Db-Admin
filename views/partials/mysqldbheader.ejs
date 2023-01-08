@@ -1,0 +1,40 @@
+<div class="row p-0">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-success bg-gradient p-1">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">MySql Admin</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link text-white" href="/<%=page%>">Home</a>
+        </li>
+      </ul>
+    </div>
+    <% if( typeof databases != 'undefined' && databases.length ) { %>
+    <div class="d-inline-block">
+        <form action="/<%=page%>/database" method="get">
+            <div class="form-group d-flex align-items-center justify-content-between gap-10">
+                <select name="db" onchange="this.form.submit();" class="form-select">
+                    <option value="">--Select Database--</option>
+                    <% databases.forEach(function(db, index) { %>
+                    <option <%=( selectedDatabase && selectedDatabase == db.Database) ? 'selected' : '' %> value="<%=db.Database%>"><%=db.Database%></option>
+                    <% }); %>    
+                </select>
+            </div>
+        </form>
+    </div>
+    <% } %>
+    <div class="collapse navbar-collapse justify-content-end">
+        <ul class="navbar-nav">
+          <% if( typeof selectedDatabase != 'undefined' && selectedDatabase != "" ) { %>
+          <li class="nav-item rounded-lg">
+            <a title="Close Db Connection" class="nav-link btn-close btn-close-white" href="/<%=page%>/disconnect"></a>
+          </li>
+          <% } %> 
+        </ul>
+    </div>
+  </div>
+</nav>
+</div>
