@@ -9,7 +9,6 @@ MongoDbController.get("/", async (req, res) => {
   let msg = DbService.getGlobalMessage();
   DbService.setGlobalMessage('');
   let URI = DbService.getUrl();
-  console.log(URI);
   if( !URI )
   {
     res.render("mongodb", {title:"Mongo Db Admin",page:"mongodb", msg: msg});
@@ -89,7 +88,6 @@ MongoDbController.get("/database", async (req, res) =>
   if( dbinstore.length )
   {
     let collections = DbService.getDbCollection(database);
-    console.log('collections in local', collections);
     if( collections == false )
     {
       dbClient.connect(URI).then((dbConnect) => {
@@ -223,7 +221,6 @@ MongoDbController.post("/table", async (req, res) =>
   let filter = {};
   if( req.body.filter ) {
     try{
-      console.log(req.body.filter);
       filter = JSON.parse(req.body.filter);
     }catch(e){
       console.log(e);
