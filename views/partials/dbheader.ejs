@@ -34,8 +34,13 @@
     <div class="collapse navbar-collapse justify-content-end">
         <ul class="navbar-nav">
           <% if( typeof URI != 'undefined' && URI != "" ) { %>
-          <li class="nav-item rounded-lg">
-            <a title="Close Db Connection" class="nav-link btn-close btn-close-white" href="/<%=page%>/disconnect"></a>
+          <li class="nav-item">
+            <a title="Save Db Connection" class="nav-link" href="/<%=page%>/save"><i class="fa fa-save"></i></a>
+          </li>
+          <% } %> 
+          <% if( typeof URI != 'undefined' && URI != "" ) { %>
+          <li class="nav-item">
+            <a title="Close Db Connection" class="nav-link mt-2 btn-close btn-close-white" href="/<%=page%>/disconnect"></a>
           </li>
           <% } %> 
         </ul>

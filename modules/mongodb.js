@@ -2,6 +2,7 @@ const fs = require("fs");
 const dbClient = require('mongodb').MongoClient;
 let instance = null;
 const logfile = __dirname+"/../data/temp.json";
+const savedFile = __dirname+"/../data/saved.json";
 
 class MongodbService
 {
@@ -24,7 +25,12 @@ class MongodbService
 		{
 			console.log(e);
 		}
-		return instance ? instance : new MongodbService();
+		if( instance ){
+			return instance;
+		}else{
+			instance = new MongodbService();
+			return instance;
+		}
 	}
 
 	getClient()
@@ -44,6 +50,127 @@ class MongodbService
 				return logfile;
 			}
 		} catch (err) {
+			return false;
+		}
+	}
+
+	getSaved()
+	{
+		return fs.readFileSync(savedFile, 'utf8');
+	}
+
+	saveConnection()
+	{
+		let logfile = this.getLogFile();
+		if( !logfile ) 
+		{
+			return false;
+		}
+		else
+		{
+			let tempJson = {};
+			let tempJsonString = fs.readFileSync(logfile, 'utf8');
+			if( tempJsonString !== false ){
+				tempJson = JSON.parse(tempJsonString);
+			} else {
+				return false;
+			}
+			console.log(tempJson);
+
+			try{
+				if( !fs.existsSync(savedFile) ) 
+				{
+				    fs.open(savedFile, 'w+', function(err, fd){
+					   if (err) {
+					   	  console.log('Cannot create log file');
+					      console.error(err);
+					      return false;
+					   }
+					   
+					   let savedConnections = {};
+					   savedConnections.mongodb = [];
+					   savedConnections.mongodb.push(tempJson);
+					   console.log(savedConnections);
+
+					   fs.writeFileSync(savedFile, JSON.stringify(savedConnections));	
+					   return true;
+
+					});// create log file
+				}
+				else
+				{
+					let savedConnections = this.getSaved();
+					if( savedConnections !== "" ){
+						let connections = JSON.parse(savedConnections);
+						connections.mongodb.push(tempJson);
+						console.log('Saving to existing connections');
+						fs.writeFileSync(savedFile, JSON.stringify(connections));	
+						return true;
+					}
+				}
+			} 
+			catch(e)
+			{
+				console.log(e);
+			}
+		}
+	}
+
+	setConnections(data)
+	{
+		try{
+			if( fs.existsSync(savedFile) ) 
+			{
+				let tempJsonString = fs.readFileSync(savedFile, 'utf8');
+				if( tempJsonString !== false )
+				{
+					let tempJson = JSON.parse(tempJsonString);
+					tempJson.mongodb = data;
+					fs.writeFileSync(savedFile, JSON.stringify(tempJson));
+					return true;
+				} 
+				else 
+				{
+					console.log('tempJsonString:false');
+					return false;
+				}
+			} else {
+				console.log('file not exists');
+				return false;
+			}
+		}
+		catch(e)
+		{
+			console.log(e);
+			return false;
+		}
+	}
+
+	getConnections()
+	{
+		try{
+			if( fs.existsSync(savedFile) ) 
+			{
+				let tempJson = {};
+				let tempJsonString = fs.readFileSync(savedFile, 'utf8');
+				if( tempJsonString !== false )
+				{
+					tempJson = JSON.parse(tempJsonString);
+					return tempJson.hasOwnProperty('mongodb') ? tempJson.mongodb : "";
+				} 
+				else 
+				{
+					console.log('tempJsonString:false');
+					return false;
+				}
+			} else {
+				console.log('file not exists');
+				return false;
+			}
+		}
+		catch(e)
+		{
+			console.log(e);
 			return false;
 		}
 	}

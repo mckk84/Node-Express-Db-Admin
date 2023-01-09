@@ -6,12 +6,13 @@ const MongoDbController = Router();
 
 MongoDbController.get("/", async (req, res) => {
   let DbService = MongoDbService.getInstance();
+  let savedConnections = DbService.getConnections();
   let msg = DbService.getGlobalMessage();
   DbService.setGlobalMessage('');
   let URI = DbService.getUrl();
   if( !URI )
   {
-    res.render("mongodb", {title:"Mongo Db Admin",page:"mongodb", msg: msg});
+    res.render("mongodb", {title:"Mongo Db Admin",page:"mongodb", msg: msg, savedConnections:savedConnections});
   }
   else
   {
@@ -69,8 +70,53 @@ MongoDbController.post("/connect", async (req, res) => {
   }
 });
 
+MongoDbController.get("/open", async (req, res) => 
+{
+  let DbService = MongoDbService.getInstance();
+  let savedConnections = DbService.getConnections();
+  let connectionIndex = parseInt(req.query.connection);
+  if( isNaN(connectionIndex) )
+  {
+    DbService.setGlobalMessage("Connection is invalid");
+    res.redirect('/mongodb');
+    return false;
+  }
+
+  let connection = savedConnections[connectionIndex];
+  DbService.setJson(connection);
+  DbService.setGlobalMessage("Connection is Set");
+  res.redirect('/mongodb');
+  return false;
+});
+
+MongoDbController.get("/delete-connection", async (req, res) => 
+{
+  let DbService = MongoDbService.getInstance();
+  let savedConnections = DbService.getConnections();
+  let connectionIndex = parseInt(req.query.connection);
+  if( isNaN(connectionIndex) )
+  {
+    DbService.setGlobalMessage("Connection is invalid");
+    res.redirect('/mongodb');
+    return false;
+  }
+  savedConnections.splice(connectionIndex, 1);
+  DbService.setConnections(savedConnections);
+  DbService.setGlobalMessage("Connection is deleted");
+  res.redirect('/mongodb');
+  return false;
+});
+
 MongoDbController.get("/disconnect", async(req, res) => {
   let DbService = MongoDbService.getInstance();
+  DbService.clearCache();
+  res.redirect('/mongodb');
+  return false;
+});
+
+MongoDbController.get("/save", async(req, res) => {
+  let DbService = MongoDbService.getInstance();
+  DbService.saveConnection();
   DbService.clearCache();
   res.redirect('/mongodb');
   return false;
