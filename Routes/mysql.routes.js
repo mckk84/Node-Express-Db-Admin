@@ -174,6 +174,7 @@ MySqlController.get("/table", async (req, res) =>
   let dbConfig = DbService.getClient();
   let database = req.query.database;
   let table = req.query.table;
+  let ajax = ( req.query.ajax ) ? 1 : 0;
   let skip = 0;
   if( typeof req.query.skip != 'undefined' )
   {
@@ -189,15 +190,22 @@ MySqlController.get("/table", async (req, res) =>
     {
     	let sql = "SELECT * FROM "+table+" LIMIT "+skip+", 10";
         DbService.db_query(dbConnection, sql).then(tableData => {
-            res.render("mysql", {
-            	title:"MySql Admin",
-	        	page:"mysql",
+        		if( ajax ){
+                res.json({
+                  table:table,
+                  tableData:tableData 
+                });
+              } else {
+            	res.render("mysql", {
+            	  title:"MySql Admin",
+	        	    page:"mysql",
                 databases:dbinstore, 
                 selectedDatabase:selectedDatabase, 
                 tables:tables, 
                 table:table,
                 tableData: tableData 
               });
+          	}
         }).catch(err => console.log(err));
     }
     else
@@ -217,15 +225,22 @@ MySqlController.get("/table", async (req, res) =>
     				DbService.setTables(selectedDatabase, tables);
 	    			let sql = "SELECT * FROM "+table+" LIMIT "+skip+", 10";
 			        DbService.db_query(dbConnection, sql).then(tableData => {
+			        	if( ajax ){
+	                res.json({
+	                  table:table,
+	                  tableData:tableData 
+	                });
+	              } else {
 			            res.render("mysql", {
-			            	title:"MySql Admin",
-				        	page:"mysql",
+			            		title:"MySql Admin",
+				        			page:"mysql",
 			                databases:dbinstore, 
 			                selectedDatabase:selectedDatabase, 
 			                tables:tables, 
 			                table:table,
 			                tableData: tableData 
 			              });
+			          }
 			        }).catch(err => console.log(err));
 
     			});

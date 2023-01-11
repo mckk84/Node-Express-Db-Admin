@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
 
 *{
     box-sizing: border-box;
@@ -24,14 +24,14 @@ body {
   scrollbar-width: none;  /* Firefox */
 }
 body{
-    font-family: 'Nunito',sans-serif;
+    font-family: 'Poppins',sans-serif;
     font-size: 12px;
 }
 .navbar-brand, .form-select, .form-control{
     font-size: 12px;
 }
 pre{
-    font-family: 'Nunito', sans-serif !important;
+    font-family: 'Poppins', sans-serif !important;
     color: #000;
 }
 label{
@@ -41,13 +41,19 @@ label{
 .bg-light {
     background-color: #0a2647!important;
 }
+.border-bottom-dark{
+    border-bottom: 1px solid #0a2647 !important;
+}
 li.nav-item {
     display: flex;
     align-items: center;
-    justify-content: space-evenly;
+    justify-content: left;
 }
 .nav-link {
-    color: white !important;
+    color: white;
+}
+.nav-link:hover { 
+    font-weight: bold;
 }
 .nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active {
     color: #000 !important;
@@ -75,6 +81,10 @@ li.nav-item {
 }
 .gap-30{
     gap:30px;
+}
+th {
+    background-color: lavender !important;
+    border: 1px solid darkgrey !important;
 }
 td {
   position: relative;

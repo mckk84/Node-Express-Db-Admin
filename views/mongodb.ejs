@@ -34,14 +34,14 @@
      <% } else { %>		
      <%- include('./partials/dbheader.ejs') %>
      <div class="row">
-	    <div class="sidebar col-md-2 bg-light py-0 px-0" style="border-right: 1px solid #343a40;min-height: 730px;">
-	        <nav class="navbar d-block w-100 p-0">
+	    <div class="sidebar col-md-2 bg-dark py-0 px-0" style="border-right: 1px solid #343a40;min-height: 730px;">
+	        <nav class="navbar d-block vh-100 w-100 p-0 overflow-auto">
 	            <% if( typeof tables != 'undefined' && tables.length ) { %>
-	            <span class="d-block w-100 py-2 bg-dark px-2 text-dark font-weight-bold">Collections</span>
+	            <span class="d-block w-100 py-2 border-bottom-dark bg-dark px-2 text-dark font-weight-bold">Collections</span>
 	            <ul class="navbar-nav">
 	                <% tables.forEach(function(t, index) { %>
 	                <li class="nav-item border-bottom">
-	                    <a class="tableDataLink nav-link text-break text-wrap p-2" href="/table?table=<%=t.name%>&db=<%=(selectedDatabase ? selectedDatabase:'')%>"><i class="fa fa-file-archive-o"></i>&nbsp;<%=t.name.toLowerCase()%></a>
+	                    <a class="tableDataLink nav-link text-dark text-break text-wrap p-2" href="/table?table=<%=t.name%>&db=<%=(selectedDatabase ? selectedDatabase:'')%>"><i class="fa fa-file-archive-o"></i>&nbsp;<%=t.name.toLowerCase()%></a>
 	                </li>
 	                <% }); %>
                 </ul>
@@ -50,7 +50,7 @@
 	    </div>
 	    <div class="col-md-10 pt-2 px-2 mb-4">
             <% if( typeof msg != 'undefined' && msg != "" ) { %>
-            <span class="w-50 d-block mx-auto text-center p-2 text-danger rounded-lg"><%=msg%></span>
+            <span class="w-100 d-block p-2 text-warning rounded-lg"><%=msg%></span>
             <% } %>
 	        <div id="queryblock" class="col-md-12 text-dark border p-2 m-2">
 	            <div class="form-group mb-2">
@@ -127,11 +127,15 @@
                 {
                     $(".loading").hide();
                     console.log(data);
-                    if( data.hasOwnProperty('tableData') )
+                    if( data.hasOwnProperty('tableData') && data.tableData.length )
                     {
                         data.tableData.forEach(function(obj) {
                             $("#responseTable table tbody").append('<tr><td style="display:block;"><pre>'+JSON.stringify(obj, undefined, 2)+'</pre><span style="top:5px;right:5px;cursor:pointer;" onclick="handleClick(this)" class="rounded-lg position-absolute"><i class="fa fa-expand"></i></span></td></tr>');                                
                         });
+                    }
+                    else
+                    {
+                        $(".loadmore").hide();
                     }
                 });
             }
@@ -185,6 +189,7 @@
                         }
                         else
                         {
+                            $(".loadmore").hide();
                             $("#responseTable").html("")
                             $("#responseTable").append('<span class="d-block border-bottom text-dark font-weight-bold p-2">No Documents found</span>');
                         }

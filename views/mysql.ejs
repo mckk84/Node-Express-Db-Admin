@@ -1,7 +1,4 @@
 <div class="container-fluid" style="min-height: 731px;">
-	<% if( typeof msg != 'undefined' && msg != "" ) { %>
-    <span class="w-50 d-block mx-auto text-center p-2 text-info rounded-lg"><h4><%=msg%></h4></span>
-    <% } %>
 	<% if( typeof databases == 'undefined' || databases === false ) { %>
 	<div class="row d-flex align-items-center justify-content-center">
     	<div class="col-6 py-4 text-center">    
@@ -34,29 +31,32 @@
      <% } else { %>		
      <%- include('./partials/mysqldbheader.ejs') %>
      <div class="row">
-	    <div class="sidebar col-md-2 bg-light py-0 px-0" style="border-right: 1px solid #343a40;min-height: 730px;">
-	        <nav class="navbar d-block w-100 p-0">
+	    <div class="sidebar col-md-2 bg-dark py-0 px-0" style="border-right: 1px solid #343a40;min-height: 730px;">
+	        <nav class="navbar d-block vh-100 w-100 p-0 overflow-auto">
 	            <% if( typeof tables != 'undefined' && tables.length ) { %>
-	            <span class="d-block w-100 py-2 bg-dark px-2 font-weight-bold text-dark">Tables</span>
+	            <span class="d-block w-100 py-2 bg-dark px-2 border-bottom-dark font-weight-bold text-dark">Tables</span>
 	            <ul class="navbar-nav">
 	                <% tables.forEach(function(t, index) { %>
                 	<li class="nav-item border-bottom">
-                        <a class="nav-link text-primary text-break text-wrap px-2 py-1" href="/<%=page%>/table?database=<%=selectedDatabase%>&table=<%=t['Tables_in_'+selectedDatabase]%>"><%=t['Tables_in_'+selectedDatabase].toLowerCase()%></a>
+                        <a class="tableDataLink nav-link text-dark text-break text-wrap px-2 py-1" href="/table?database=<%=selectedDatabase%>&table=<%=t['Tables_in_'+selectedDatabase]%>"><%=t['Tables_in_'+selectedDatabase].toLowerCase()%></a>
                     </li>
 	                <% }); %>
 	            <% } %>
 	        </nav>
 	    </div>
 	    <div class="col-md-10 pt-2 px-2 mb-4">
-	        <!-- <div id="queryblock" class="col-md-12 text-dark border p-2 m-2">
+            <% if( typeof msg != 'undefined' && msg != "" ) { %>
+            <span class="w-100 d-block p-2 text-warning rounded-lg"><%=msg%></span>
+            <% } %>
+	        <div id="queryblock" class="col-md-12 text-dark border p-2">
 	            <div class="form-group mb-2">
 	                <textarea name="query" class="form-control" rows="3" cols="50" placeholder="Query.."></textarea>
 	            </div>
 	            <div class="form-group">
-	                <button class="btn btn-primary">Query</button>
+	                <button onclick="query()" class="btn btn-sm btn-primary">Query</button>
 	            </div>
-	        </div> -->
-	        <div id="responseTable" data-skip="0" class="col-md-12 pt-2 px-2 mb-4 mx-auto">
+	        </div>
+	        <div id="responseTable" data-skip="0" class="col-md-12 mb-4 mx-auto">
 	            <span class="w-100 loading mt-2 p-2 text-center bg-dark text-light rounded-lg">Loading Documents...</span>
 	            <% if( typeof table !== "undefined" ) { %>
 	            <span class="d-block border-bottom text-dark font-weight-bold p-2"><%=table%></span>
@@ -115,11 +115,15 @@
                 {
                     $(".loading").hide();
                     console.log(data);
-                    if( data.hasOwnProperty('tableData') )
+                    if( data.hasOwnProperty('tableData') && data.tableData.length )
                     {
                         data.tableData.forEach(function(obj) {
                             $("#responseTable table tbody").append('<tr><td><pre>'+JSON.stringify(obj, undefined, 2)+'</pre><span style="top:5px;right:5px;cursor:pointer;" onclick="handleClick(this)" class="rounded-lg position-absolute"><i class="fa fa-expand"></i></span></td></tr>');                                
                         });
+                    }
+                    else
+                    {
+                        $(".loadmore").hide();
                     }
                 });
             }
@@ -149,14 +153,27 @@
                         $(".loading").hide();
                         if( data.hasOwnProperty('table') )
                         {
-                            $("#responseTable").html('<span class="d-block border-bottom bg-info text-light font-weight-bold p-2">'+data.table+'</span>');
+                            $("#responseTable").html('<span class="d-block border-bottom bg-dark text-dark font-weight-bold p-2">'+data.table+'</span>');
                         }
-                        if( data.hasOwnProperty('tableData') )
+                        if( data.hasOwnProperty('tableData') && data.tableData.length )
                         {
-                            $("#responseTable").append('<div class="table-responsive w-100"><table border="1" class="w-100 table table-bordered"><tbody></tbody></table><span onclick="loadmore()" class="loadmore">Load More</span></div>');
-                            data.tableData.forEach(function(obj) {
-                                $("#responseTable table tbody").append('<tr><td><pre>'+JSON.stringify(obj, undefined, 2)+'</pre><span style="top:5px;right:5px;cursor:pointer;" onclick="handleClick(this)" class="rounded-lg position-absolute"><i class="fa fa-expand"></i></span></td></tr>');                                
+                            $("#responseTable").append('<div class="table-responsive w-100"><table border="1" class="w-100 table table-bordered"><thead><tr></tr></thead><tbody></tbody></table><span onclick="loadmore()" class="loadmore">Load More</span></div>');
+                            var first = data.tableData[0];
+                            Object.keys(first).forEach(function(key) 
+                            {
+                                $("#responseTable table thead tr").append('<th>'+key+'</th>');                                
+                            });                            
+
+                            data.tableData.forEach(function(obj) 
+                            {
+                                var obj_values = Object.values(obj);
+                                console.log(obj_values);
+                                $("#responseTable table tbody").append('<tr><td>'+obj_values.join('</td><td>')+'</td></tr>');
                             });
+                        }
+                        else
+                        {
+                            $(".loadmore").hide();
                         }
                     });
                     return false;
