@@ -2,8 +2,11 @@
 	<% if( typeof databases == 'undefined' || databases === false ) { %>
 	<div class="row d-flex align-items-center justify-content-center">
     	<div class="col-6 py-4 text-center">    
-            <div class="border rounded-lg shadow-lg bg-light mx-auto p-4 py-5">
+            <div class="border rounded shadow-lg bg-light mx-auto p-4 py-5">
             	<h3 class="mb-3 font-weight-bold text-light">MYSQL DB</h3>
+                <% if( typeof msg != 'undefined' && msg != "" ) { %>
+                <span class="w-100 d-block p-2 text-warning rounded-lg"><%=msg%></span>
+                <% } %>
                 <form method="post" action="/<%=page%>/connect">
                     <div class="form-group d-flex align-items-center justify-content-between mb-2">
                         <label class="text-light">Host</label>
@@ -35,10 +38,10 @@
 	        <nav class="navbar d-block vh-100 w-100 p-0 overflow-auto">
 	            <% if( typeof tables != 'undefined' && tables.length ) { %>
 	            <span class="d-block w-100 py-2 bg-dark px-2 border-bottom-dark font-weight-bold text-dark">Tables</span>
-	            <ul class="navbar-nav">
+	            <ul class="navbar-nav py-2">
 	                <% tables.forEach(function(t, index) { %>
                 	<li class="nav-item border-bottom">
-                        <a class="tableDataLink nav-link text-dark text-break text-wrap px-2 py-1" href="/table?database=<%=selectedDatabase%>&table=<%=t['Tables_in_'+selectedDatabase]%>"><%=t['Tables_in_'+selectedDatabase].toLowerCase()%></a>
+                        <a class="tableDataLink nav-link text-dark text-break text-wrap px-2 py-0" href="/table?database=<%=selectedDatabase%>&table=<%=t['Tables_in_'+selectedDatabase]%>"><%=t['Tables_in_'+selectedDatabase].toLowerCase()%></a>
                     </li>
 	                <% }); %>
 	            <% } %>
@@ -56,8 +59,12 @@
 	                <button onclick="query()" class="btn btn-sm btn-primary">Query</button>
 	            </div>
 	        </div>
+            <span class="d-inline-block mt-2 p-2 text-center text-dark">
+                <div class="loading spinner-border text-danger" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+            </span>
 	        <div id="responseTable" data-skip="0" class="col-md-12 mb-4 mx-auto">
-	            <span class="w-100 loading mt-2 p-2 text-center bg-dark text-light rounded-lg">Loading Documents...</span>
 	            <% if( typeof table !== "undefined" ) { %>
 	            <span class="d-block border-bottom text-dark font-weight-bold p-2"><%=table%></span>
 	            <% } %>
@@ -127,15 +134,96 @@
                     }
                 });
             }
+
+            function query()
+            {
+                if( query == "" )
+                {
+                    return false;   
+                }
+                var skip = 0;
+                var request_url = $("#responseTable").data("req");
+                $(".loading").show();
+                request_url = request_url;
+                $("#responseTable").data("skip", skip);
+
+                var query = $("textarea[name='query']").val().trim();
+                console.log(query);
+                var request_params = {};
+                if( query !== "" )
+                {
+                    request_params.query = query;   
+                }
+                if( skip != "")
+                {
+                    request_params.skip = skip;
+                }
+                console.log(request_url);
+                $.ajax({
+                   url: request_url, 
+                   type: "POST",
+                   dataType: "json",
+                   data: request_params,
+                   success: function (result) 
+                   {
+                        $("#responseTable").html("");
+                        $(".loading").hide();
+                        if( result.hasOwnProperty('table') )
+                        {
+                            $("#responseTable").html('<span class="d-block border-bottom text-dark font-weight-bold p-2">'+result.table+'</span>');
+                        }
+                        if( result.hasOwnProperty('tableData') && result.tableData.length )
+                        {
+                            $("#responseTable").append('<div class="table-responsive w-100"><table border="1" class="w-100 table table-bordered"><thead><tr></tr></thead><tbody></tbody></table></div>');
+                            if( result.tableData.length == 10 )
+                            {
+                                $("#responseTable .table-responsive").append('<span onclick="loadmore()" class="loadmore">Load More</span>');
+                            }
+                            var first = result.tableData[0];
+                            Object.keys(first).forEach(function(key) 
+                            {
+                                $("#responseTable table thead tr").append('<th>'+key+'</th>');                                
+                            });                            
+
+                            result.tableData.forEach(function(obj) 
+                            {
+                                var obj_values = Object.values(obj);
+                                console.log(obj_values);
+                                $("#responseTable table tbody").append('<tr><td>'+obj_values.join('</td><td>')+'</td></tr>');
+                            });
+                        }
+                        else
+                        {
+                            $(".loadmore").hide();
+                            $("#responseTable").html("");
+                            let error = result.hasOwnProperty('error') ? "<p class='mb-0 text-danger'>"+result.error+"</p>" : "<p class='text-dark mb-0'>No records.</p>";
+                            $("#responseTable").append('<span class="d-block p-2">'+error+'</span>');
+                        }
+                    },
+                    error: function (err) {
+                        $("#responseTable").html("");
+                        if( typeof err.responseText != 'undefined'){
+                           $("#responseTable").append('<span class="d-block border-bottom text-dark font-weight-bold p-2">'+err.responseText+'</span>');
+                        }else{
+                            $("#responseTable").append('<span class="d-block border-bottom text-dark font-weight-bold p-2">Error Ocurred</span>');
+                        }
+
+                    }
+                }); // ajax call closing
+            }
             
             $(document).ready(function(){
 
                 $(".loading").hide();
-                //$("#queryblock").hide();
+                $("#queryblock").hide();
 
                 $(".tableDataLink").click(function(e)
                 {
                     e.preventDefault();
+
+                    $(".tableDataLink.active").removeClass('active');
+
+                    $(this).addClass('active');
                     $(".loading").show();
                     $("#responseTable").html("").data("skip", 10);
                     var url_params = window.location.href.split('/');
@@ -145,7 +233,6 @@
                     console.log($(this).attr("href"));
                     var request_url = base_url + $(this).attr("href") + "&ajax=1";
                     $("#responseTable").data("req", request_url);
-                    $(".loading").html('Loading Documents..');
                     $("#queryblock").show();
 
                     $.get(request_url, function(data)
@@ -153,11 +240,15 @@
                         $(".loading").hide();
                         if( data.hasOwnProperty('table') )
                         {
-                            $("#responseTable").html('<span class="d-block border-bottom bg-dark text-dark font-weight-bold p-2">'+data.table+'</span>');
+                            $("#responseTable").html('<span class="d-block border-bottom text-dark font-weight-bold p-2">'+data.table+'</span>');
                         }
                         if( data.hasOwnProperty('tableData') && data.tableData.length )
                         {
-                            $("#responseTable").append('<div class="table-responsive w-100"><table border="1" class="w-100 table table-bordered"><thead><tr></tr></thead><tbody></tbody></table><span onclick="loadmore()" class="loadmore">Load More</span></div>');
+                            $("#responseTable").append('<div class="table-responsive w-100"><table border="1" class="w-100 table table-bordered"><thead><tr></tr></thead><tbody></tbody></table></div>');
+                            if( data.tableData.length == 10 )
+                            {
+                                $("#responseTable .table-responsive").append('<span onclick="loadmore()" class="loadmore">Load More</span>');
+                            }
                             var first = data.tableData[0];
                             Object.keys(first).forEach(function(key) 
                             {
@@ -173,6 +264,7 @@
                         }
                         else
                         {
+                            $("#responseTable").append('<div class="table-responsive w-100"><p>No data.</p></div>');
                             $(".loadmore").hide();
                         }
                     });

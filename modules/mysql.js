@@ -1,5 +1,4 @@
 const mysql = require("mysql");
-const dotenv = require("dotenv");
 const fs = require("fs");
 const logfile = __dirname+"/../data/mysql.json";
 
@@ -315,19 +314,22 @@ class MysqlService
         return [];
     }
 
-    async db_query(db_connection, sql) {
-        try {
-            const response = await new Promise((resolve, reject) => {
-                const query = sql;
-                db_connection.query(query, (err, results) => {
+    async db_query(db_connection, sql) 
+    {
+        return await new Promise((resolve, reject) => {
+            const query = sql;
+            try {
+                db_connection.query(query, (err, results) => 
+                {
                     if (err) reject(new Error(err.message));
                     resolve(results);
-                })
-            });
-            return response;
-        } catch (error) {
-            console.log(error);
-        }
+                });
+            }
+            catch (error) 
+            {
+                if(error) reject(new Error(error.message));
+            }
+        });        
     }
 
 }

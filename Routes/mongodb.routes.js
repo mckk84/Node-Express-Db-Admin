@@ -10,6 +10,7 @@ MongoDbController.get("/", async (req, res) => {
   let msg = DbService.getGlobalMessage();
   DbService.setGlobalMessage('');
   let URI = DbService.getUrl();
+  console.log(URI);
   if( !URI )
   {
     res.render("mongodb", {title:"Mongo Db Admin",page:"mongodb", msg: msg, savedConnections:savedConnections});
@@ -25,18 +26,18 @@ MongoDbController.get("/", async (req, res) => {
         DbService.setDatabases(collections.databases);
         msg = "Select a Database";
         res.render("mongodb", {title:"Mongo Db Admin", page:"mongodb",URI:URI,msg:msg,databases:collections.databases, selectedDatabase:selectedDatabase});
-
-      }).catch(err => {
+      }).catch(err => 
+      {
         console.log(err);
-        DbService.setGlobalMessage("Failed to get databases from MongoDB");
-        res.redirect('/mongodb');
+        let msg = "Failed to get databases from MongoDB";
+        res.render("mongodb", {title:"Mongo Db Admin",page:"mongodb", msg: msg});
         return false;  
       });
     }).catch(err => {
       console.log('MongoDB connect failed.');
       console.log(err);
-      DbService.setGlobalMessage("Failed to connect MongoDB");
-      res.redirect('/mongodb');
+      let msg = "Failed to connect MongoDB";
+      res.render("mongodb", {title:"Mongo Db Admin",page:"mongodb", msg: msg});
       return false;
     });
   }

@@ -8,7 +8,7 @@ MySqlController.get("/", async (req, res) => {
   let msg = DbService.getGlobalMessage();
   DbService.setGlobalMessage('');
   let dbConfig = DbService.getClient();
-  //console.log(dbConfig);
+  console.log(dbConfig);
   if( !dbConfig )
   {
     res.render("mysql", {title:"MySql Admin",page:"mysql", msg: msg});
@@ -22,9 +22,9 @@ MySqlController.get("/", async (req, res) => {
     dbConnection.connect((err) => {
     	if( err )
     	{
-    		console.log(err);
-	      	DbService.setGlobalMessage("Failed to connect : "+err.message);
-	      	res.redirect('/mysql');
+    		  console.log(err);
+	      	let msg = "Failed to connect : "+err.message;
+	      	res.render("mysql", {title:"MySql Admin",page:"mysql", msg: msg});
 	      	return true;	
     	}
     	else
@@ -282,6 +282,151 @@ MySqlController.get("/table", async (req, res) =>
     	}
     });
   }
+});
+
+MySqlController.post("/table", async (req, res) => 
+{
+  let DbService = MysqlService.getInstance(); 
+  let dbinstore = DbService.getDatabases();
+  let dbConfig = DbService.getClient();
+  let database = req.query.database;
+  let table = req.query.table;
+  let ajax = ( req.query.ajax ) ? 1 : 0;
+  let skip = 0;
+  if( typeof req.body.skip != 'undefined' )
+  {
+    skip = parseInt(req.body.skip);
+  }
+  let query = "";
+  if( typeof req.body.query != 'undefined' )
+  {
+    query = req.body.query;
+  }
+  console.log(query);
+  let selectedDatabase = database;
+  dbConfig.database = selectedDatabase;
+  let dbConnection = DbService.connect(dbConfig);
+  if( dbinstore.length )
+  {
+    let tables = DbService.getTables(selectedDatabase);
+    if( tables.length )
+    {
+      DbService.db_query(dbConnection, query).then(tableData => {
+      		if( ajax ){
+              res.json({
+                table:table,
+                tableData:tableData 
+              });
+            } else {
+          	res.render("mysql", {
+          	  title:"MySql Admin",
+        	    page:"mysql",
+              databases:dbinstore, 
+              selectedDatabase:selectedDatabase, 
+              tables:tables, 
+              table:table,
+              tableData: tableData 
+            });
+        	}
+      }).catch(err => {
+      	console.log('error',err);
+      	if( ajax ){
+          res.json({
+            table:table,
+            tableData:[],
+            error:err.message, 
+          });
+        } 
+      });
+    }
+    else
+    {
+      	dbConnection.connect((err) => {
+	    	if( err ) {
+	    		console.log(err);
+	      	DbService.setGlobalMessage("Failed to connect : "+err.message);
+	      	res.redirect('/mysql');
+	      	return true;	
+	    	}
+	    	else
+	    	{
+	    		DbService.fetchTables(dbConnection, selectedDatabase).then((tables) => 
+    			{
+    				DbService.setTables(selectedDatabase, tables);
+		        DbService.db_query(dbConnection, query).then(tableData => {
+		        	if( ajax ){
+                res.json({
+                  table:table,
+                  tableData:tableData 
+                });
+              } else {
+		            res.render("mysql", {
+		            		title:"MySql Admin",
+			        			page:"mysql",
+		                databases:dbinstore, 
+		                selectedDatabase:selectedDatabase, 
+		                tables:tables, 
+		                table:table,
+		                tableData: tableData 
+		              });
+		          }
+		        }).catch(err => {
+		        	console.log('e=', err);
+		        	if( ajax ){
+			          res.json({
+			            table:table,
+			            tableData:[],
+			            error:err.message, 
+			          });
+			        }
+		      	});
+    			});
+	    	}
+	    });
+    }
+  }
+  else
+  {
+    dbConnection.connect((err) => {
+    	if( err )
+    	{
+    		console.log(err);
+      	DbService.setGlobalMessage("Failed to connect : "+err.message);
+      	res.redirect('/mysql');
+      	return true;	
+    	}
+    	else
+    	{
+    		DbService.fetchDatabases(dbConnection).then(databases => {
+    			DbService.setDatabases(databases);
+    			DbService.fetchTables(dbConnection, selectedDatabase).then((tables) => 
+    			{
+    				DbService.setTables(selectedDatabase, tables);
+		        DbService.db_query(dbConnection, query).then(tableData => {
+		            res.render("mysql", {
+		            	title:"MySql Admin",
+			        	page:"mysql",
+		                databases:databases, 
+		                selectedDatabase:selectedDatabase, 
+		                tables:tables, 
+		                table:table,
+		                tableData: tableData 
+		              });
+		        }).catch(err => {
+		        	console.log(err);
+		        	if( ajax ){
+			          res.json({
+			            table:table,
+			            tableData:[],
+			            error:err.message, 
+			          });
+			        }
+    			});
+    			});
+    		});
+    	}
+  	});
+	}
 });
 
 module.exports = { MySqlController };
