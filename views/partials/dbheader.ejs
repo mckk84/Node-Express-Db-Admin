@@ -1,47 +1,47 @@
 <div class="row p-0">
   <nav class="navbar navbar-expand-lg navbar-dark bg-success bg-gradient p-1">
-  <div class="container-fluid">
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav">
-        <% if( typeof URI != 'undefined' && URI != "" ) { %>
-        <li class="nav-item text-center">
-          <a title="<%=URI%>" class="nav-link text-white" href="#"><i class="fa fa-database"></i></a>
-        </li>
-        <% } %>
-        <li class="nav-item">
-          <a class="nav-link text-white" href="/<%=page%>">Home</a>
-        </li>
-      </ul>
-    </div>
-    <% if( typeof databases != 'undefined' && databases.length ) { %>
-    <div class="d-inline-block">
-        <form action="/<%=page%>/database" method="get">
-            <div class="d-inline-flex align-items-center justify-content-between"><b>Databases :</b></div>
-            <div class="form-group d-flex align-items-center justify-content-between gap-10">
-                <select name="db" onchange="this.form.submit();" class="form-select">
-                    <option value="">--Select Database--</option>
-                    <% databases.forEach(function(db, index) { %>
-                    <option <%=( selectedDatabase && selectedDatabase == db.name) ? 'selected' : '' %> value="<%=db.name%>"><%=db.name%></option>
-                    <% }); %>    
-                </select>
-            </div>
-        </form>
-    </div>
-    <% } %>
-    <div class="collapse navbar-collapse justify-content-end">
+    <div class="container-fluid justify-contents-center">
+      <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav">
           <% if( typeof URI != 'undefined' && URI != "" ) { %>
-          <li class="nav-item">
-            <a title="Save Db Connection" class="nav-link" href="/<%=page%>/save"><i class="fa fa-save"></i></a>
+          <li class="nav-item text-center">
+            <a title="<%=URI%>" class="nav-link text-white" href="#"><i class="fa fa-database"></i></a>
           </li>
-          <% } %> 
-          <% if( typeof URI != 'undefined' && URI != "" ) { %>
+          <% } %>
           <li class="nav-item">
-            <a title="Close Db Connection" class="nav-link mt-2 btn-close btn-close-white" href="/<%=page%>/disconnect"></a>
+            <a class="nav-link text-white" href="/<%=page%>">Home</a>
           </li>
-          <% } %> 
         </ul>
-    </div>
-  </div>
-</nav>
+      </div>
+      <% if( typeof databases != 'undefined' && databases.length ) { %>
+        <form class="col-6" action="/<%=page%>/database" method="get">
+          <div class="d-flex justify-content-center">
+              <div class="d-inline-flex align-items-center justify-content-between"><b>Databases :</b>&nbsp;</div>
+              <div class="form-group d-flex align-items-center justify-content-between gap-10">
+                  <select name="db" onchange="this.form.submit();" class="form-select">
+                      <option value="">--Select Database--</option>
+                      <% databases.forEach(function(db, index) { %>
+                      <option <%=( selectedDatabase && selectedDatabase == db.name) ? 'selected' : '' %> value="<%=db.name%>"><%=db.name%></option>
+                      <% }); %>    
+                  </select>
+              </div>
+            </div>
+        </form>
+      <% } %>
+      <div class="collapse navbar-collapse justify-content-end">
+          <ul class="navbar-nav">
+            <% if( typeof URI != 'undefined' && URI != "" ) { %>
+            <li class="nav-item">
+              <a title="Save Db Connection" class="nav-link text-dark" href="/<%=page%>/save"><i class="fa fa-save"></i></a>
+            </li>
+            <% } %> 
+            <% if( typeof URI != 'undefined' && URI != "" ) { %>
+            <li class="nav-item">
+              <a title="Close Db Connection" class="nav-link btn-close btn-close-black" href="/<%=page%>/disconnect"></a>
+            </li>
+            <% } %> 
+          </ul>
+      </div>
+    </div>  
+  </nav>
 </div>

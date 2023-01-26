@@ -8,14 +8,12 @@ MySqlController.get("/", async (req, res) => {
   let msg = DbService.getGlobalMessage();
   DbService.setGlobalMessage('');
   let dbConfig = DbService.getClient();
-  console.log(dbConfig);
   if( !dbConfig )
   {
     res.render("mysql", {title:"MySql Admin",page:"mysql", msg: msg});
   }
   else
   {
-    console.log('connecting to db');
     let dbConfig = DbService.getClient();
     let dbConnection = DbService.connect(dbConfig);
     let selectedDatabase = '';
@@ -214,9 +212,9 @@ MySqlController.get("/table", async (req, res) =>
 	    	if( err )
 	    	{
 	    		console.log(err);
-		      	DbService.setGlobalMessage("Failed to connect : "+err.message);
-		      	res.redirect('/mysql');
-		      	return true;	
+	      	DbService.setGlobalMessage("Failed to connect : "+err.message);
+	      	res.redirect('/mysql');
+	      	return true;	
 	    	}
 	    	else
 	    	{

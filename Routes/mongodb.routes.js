@@ -10,7 +10,6 @@ MongoDbController.get("/", async (req, res) => {
   let msg = DbService.getGlobalMessage();
   DbService.setGlobalMessage('');
   let URI = DbService.getUrl();
-  console.log(URI);
   if( !URI )
   {
     res.render("mongodb", {title:"Mongo Db Admin",page:"mongodb", msg: msg, savedConnections:savedConnections});
